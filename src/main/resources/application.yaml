@@ -1,0 +1,3 @@
+tcp:
+  host: localhost
+  port: 8282
