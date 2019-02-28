@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,30 +17,39 @@ class MessageProcessorTest {
     @Mock
     private TcpListener mockTcpListener;
     @Mock
-    private ApplicationStartedEvent mockEvent;
+    private Transformer mockTransformer;
     private MessageProcessor unit;
 
     @BeforeEach
     void setUp() {
-        unit = new MessageProcessor(mockTcpListener);
-        when(mockTcpListener.isRunning()).thenReturn(true);
+        unit = new MessageProcessor(mockTcpListener, mockTransformer);
     }
 
     @Test
     void shouldCallStartListening() {
-        unit.startMessageProcessing(mockEvent);
+        unit.startMessageProcessing();
         verify(mockTcpListener).startListening();
     }
 
     @Test
     void shouldCallTakeMessage() {
-        unit.startMessageProcessing(mockEvent);
+        unit.startMessageProcessing();
         verify(mockTcpListener).takeMessage();
     }
 
     @Test
     void shouldCallStopListening() {
-        unit.startMessageProcessing(mockEvent);
+        unit.startMessageProcessing();
         verify(mockTcpListener).stopListening();
+    }
+
+    @Test
+    void shouldCallTransformer() {
+        String message = "asd";
+        when(mockTcpListener.takeMessage()).thenReturn(message).thenReturn(null);
+
+        unit.startMessageProcessing();
+
+        verify(mockTransformer).toDomain(eq(message));
     }
 }

@@ -64,8 +64,4 @@ public class TcpListener {
         }
         return null;
     }
-
-    public boolean isRunning() {
-        return running.get();
-    }
 }
