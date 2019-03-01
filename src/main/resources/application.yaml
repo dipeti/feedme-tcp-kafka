@@ -1,3 +1,7 @@
 tcp:
   host: localhost
   port: 8282
+spring:
+  kafka:
+    bootstrap-servers: '192.168.0.16:9092'
+    topic: 'dev.betting'
