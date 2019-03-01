@@ -1,7 +1,6 @@
 package dinya.peter.feedme.messaging;
 
 import dinya.peter.feedme.model.Domain;
-import dinya.peter.feedme.model.Event;
 import dinya.peter.feedme.service.TcpListener;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,8 +10,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,7 +29,7 @@ class MessageProcessorTest {
     @Mock
     private KafkaTemplate<?, Domain> mockKafkaTemplate;
     @Captor
-    private ArgumentCaptor<Domain> argumentCaptor;
+    private ArgumentCaptor<Message<Domain>> argumentCaptor;
     private MessageProcessor unit;
 
     @BeforeEach
@@ -58,14 +57,41 @@ class MessageProcessorTest {
 
     @Test
     void shouldCallKafkaTemplate() {
-        Domain event = DomainTestData.anEvent();
+        Domain event = DomainTestData.anEventCreateMessage();
         when(mockTransformer.toDomain(anyString())).thenReturn(event);
         when(mockTcpListener.takeMessage()).thenReturn("someString").thenReturn(null);
 
         unit.startMessageProcessing();
 
-        verify(mockKafkaTemplate).send(eq(TOPIC), argumentCaptor.capture());
-        Assertions.assertEquals(argumentCaptor.getValue(), event);
+        verify(mockKafkaTemplate).send(argumentCaptor.capture());
+        Assertions.assertEquals(argumentCaptor.getValue().getPayload(), event);
+    }
+
+    @Test
+    void shouldSetUpHeadersForCreateMessage() {
+        Domain event = DomainTestData.anEventCreateMessage();
+        when(mockTransformer.toDomain(anyString())).thenReturn(event);
+        when(mockTcpListener.takeMessage()).thenReturn("someString").thenReturn(null);
+
+        unit.startMessageProcessing();
+
+        verify(mockKafkaTemplate).send(argumentCaptor.capture());
+
+        Assertions.assertEquals(TOPIC, argumentCaptor.getValue().getHeaders().get(KafkaHeaders.TOPIC));
+        Assertions.assertEquals(1, argumentCaptor.getValue().getHeaders().get(KafkaHeaders.PARTITION_ID));
+    }
+
+    @Test
+    void shouldSetUpHeadersForNonCreateMessage() {
+        Domain event = DomainTestData.anOutcomeUpdateMessage();
+        when(mockTransformer.toDomain(anyString())).thenReturn(event);
+        when(mockTcpListener.takeMessage()).thenReturn("someString").thenReturn(null);
+
+        unit.startMessageProcessing();
+
+        verify(mockKafkaTemplate).send(argumentCaptor.capture());
+        Assertions.assertEquals(TOPIC, argumentCaptor.getValue().getHeaders().get(KafkaHeaders.TOPIC));
+        Assertions.assertNull(argumentCaptor.getValue().getHeaders().get(KafkaHeaders.PARTITION_ID));
     }
 
 
@@ -73,7 +99,7 @@ class MessageProcessorTest {
     void shouldCallTransformer() {
         String message = "asd";
         when(mockTcpListener.takeMessage()).thenReturn(message).thenReturn(null);
-
+        when(mockTransformer.toDomain(anyString())).thenReturn(DomainTestData.anEventCreateMessage());
         unit.startMessageProcessing();
 
         verify(mockTransformer).toDomain(eq(message));

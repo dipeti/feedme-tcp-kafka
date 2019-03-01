@@ -5,12 +5,21 @@ import dinya.peter.feedme.service.TcpListener;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.springframework.messaging.support.MessageBuilder.createMessage;
 
 @Component
 @Log4j2
 public class MessageProcessor {
+    private static final int CREATE_PARTITION = 1;
+    private static final String CREATE_OPERATION = "create";
     private final TcpListener tcpListener;
     private final Transformer transformer;
     private final KafkaTemplate<?, Domain> kafkaTemplate;
@@ -29,8 +38,23 @@ public class MessageProcessor {
         String message;
         while ((message = tcpListener.takeMessage()) != null) {
             Domain domain = transformer.toDomain(message);
-            kafkaTemplate.send(topic, domain);
+            kafkaTemplate.send(createKafkaMessage(domain));
         }
         tcpListener.stopListening();
+    }
+
+    /**
+     * Make sure 'create' messages are consumed in order i.e. end up on the same partition.
+     *
+     * @see org.apache.kafka.clients.producer.internals.DefaultPartitioner
+     */
+    private Message<?> createKafkaMessage(Domain domain) {
+        Map<String, Object> headers = new HashMap<>();
+
+        if (CREATE_OPERATION.equalsIgnoreCase(domain.getOperation())) {
+            headers.put(KafkaHeaders.PARTITION_ID, CREATE_PARTITION);
+        }
+        headers.put(KafkaHeaders.TOPIC, topic);
+        return createMessage(domain, new MessageHeaders(headers));
     }
 }

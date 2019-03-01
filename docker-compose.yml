@@ -18,7 +18,7 @@ services:
       KAFKA_ADVERTISED_HOST_NAME: 192.168.0.16 # eg: HOST_IP_ADDR=$(ipconfig getifaddr en0) docker-compose up
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_CREATE_TOPICS: "dev.betting:2:1"
+      KAFKA_CREATE_TOPICS: "dev.betting:8:1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
