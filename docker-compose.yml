@@ -29,3 +29,13 @@ services:
     ports:
     - "8181:8181"
     - "8282:8282"
+
+  feedme:
+    image: feedme
+    ports:
+    - "8080:8080"
+    environment:
+      TCP_HOST: provider
+      SPRING_KAFKA_BOOTSTRAPSERVERS: 192.168.0.16:9092
+    depends_on:
+      - kafka

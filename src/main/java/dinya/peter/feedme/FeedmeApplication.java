@@ -16,8 +16,17 @@ public class FeedmeApplication implements ApplicationRunner {
 
     @Autowired
     private MessageProcessor messageProcessor;
+
     @Override
     public void run(ApplicationArguments args) {
-        messageProcessor.startMessageProcessing();
+        new Thread(() -> {
+            try {
+                /* Give time to Kafka to create the topic*/
+                Thread.sleep(10000);
+                messageProcessor.startMessageProcessing();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 }
