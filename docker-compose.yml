@@ -49,6 +49,7 @@ services:
     environment:
       SPRING_KAFKA_TOPIC: 'dev.betting'
       SPRING_KAFKA_BOOTSTRAPSERVERS: 192.168.0.16:9092
+      SPRING_KAFKA_LISTENER_CONCURRENCY: 4
       SPRING_DATA_MONGODB_HOST: mongo
     depends_on:
       - feedme
