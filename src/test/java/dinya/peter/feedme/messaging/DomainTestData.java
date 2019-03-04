@@ -17,6 +17,6 @@ public class DomainTestData {
     }
 
     public static Domain anOutcomeUpdateMessage() {
-        return new Outcome(OUTCOME_PROPS);
+        return new Outcome(OUTCOME_PROPS, "eventId");
     }
 }

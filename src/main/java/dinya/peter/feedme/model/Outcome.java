@@ -14,8 +14,9 @@ public class Outcome extends Domain {
     private final String price;
     private final Boolean displayed;
     private final Boolean suspended;
+    private final String eventId;
 
-    public Outcome(List<String> properties) {
+    public Outcome(List<String> properties, String eventId) {
         super(properties);
         this.marketId = properties.get(4);
         this.outcomeId = properties.get(5);
@@ -23,5 +24,11 @@ public class Outcome extends Domain {
         this.price = properties.get(7);
         this.displayed = TRUE.equals(properties.get(8));
         this.suspended = TRUE.equals(properties.get(9));
+        this.eventId = eventId;
+    }
+
+    @Override
+    public String getPartitionKey() {
+        return eventId;
     }
 }

@@ -22,4 +22,9 @@ public class Market extends Domain {
         this.displayed = TRUE.equals(properties.get(7));
         this.suspended = TRUE.equals(properties.get(8));
     }
+
+    @Override
+    public String getPartitionKey() {
+        return eventId;
+    }
 }

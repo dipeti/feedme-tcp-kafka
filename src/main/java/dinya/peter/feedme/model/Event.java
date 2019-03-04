@@ -26,4 +26,9 @@ public class Event extends Domain {
         this.displayed = TRUE.equals(properties.get(9));
         this.suspended = TRUE.equals(properties.get(10));
     }
+
+    @Override
+    public String getPartitionKey() {
+        return eventId;
+    }
 }

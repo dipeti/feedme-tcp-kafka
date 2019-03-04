@@ -41,7 +41,7 @@ public class TcpListener {
             String line;
             while (running.get() && (line = bufferedReader.readLine()) != null) {
                 buffer.put(line);
-                log.info("An element was added to the buffer, current size=[{}]", buffer.size());
+                log.debug("An element was added to the buffer, current size=[{}]", buffer.size());
             }
         } catch (IOException e) {
             log.error("Stopped listening for updates on host=[{}], port=[{}] due to error:", host, port, e);

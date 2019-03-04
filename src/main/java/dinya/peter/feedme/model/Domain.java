@@ -1,5 +1,6 @@
 package dinya.peter.feedme.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
 import java.util.List;
@@ -19,4 +20,7 @@ public abstract class Domain {
         this.type = iterator.next();
         this.timestamp = Long.parseLong(iterator.next());
     }
+
+    @JsonIgnore
+    public abstract String getPartitionKey();
 }

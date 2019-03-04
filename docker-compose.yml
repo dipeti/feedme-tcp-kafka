@@ -1,9 +1,9 @@
 version: '2'
 services:
-  #mongo:
-  #  image: mongo
-  #  ports:
-  #    - "27017:27017"
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
 
   zookeeper:
     image: wurstmeister/zookeeper
@@ -27,15 +27,28 @@ services:
   provider:
     image: sbgfeedme/provider:latest
     ports:
-    - "8181:8181"
-    - "8282:8282"
+      - "8181:8181"
+      - "8282:8282"
+    depends_on:
+      - kafka
 
   feedme:
     image: feedme
     ports:
-    - "8080:8080"
+      - "8080:8080"
     environment:
       TCP_HOST: provider
+      SPRING_KAFKA_TOPIC: 'dev.betting'
       SPRING_KAFKA_BOOTSTRAPSERVERS: 192.168.0.16:9092
     depends_on:
-      - kafka
+      - provider
+  feedme-db:
+    image: feedme-db
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_KAFKA_TOPIC: 'dev.betting'
+      SPRING_KAFKA_BOOTSTRAPSERVERS: 192.168.0.16:9092
+      SPRING_DATA_MONGODB_HOST: mongo
+    depends_on:
+      - feedme

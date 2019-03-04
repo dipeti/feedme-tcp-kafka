@@ -7,13 +7,18 @@ import dinya.peter.feedme.model.Outcome;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
 @Component
 public class Transformer {
-    public  Domain toDomain(String message) {
+    // TODO: should really store this in Redis. Or even better: ancestors for selections
+    private final Map<String, String> marketIdToEventIdMap = new HashMap<>();
+
+    public Domain toDomain(String message) {
         List<String> properties = Arrays.stream(message.split("(?<!\\\\)\\|"))
                 .skip(1)
                 .map(s -> s.replace("\\", ""))
@@ -27,11 +32,13 @@ public class Transformer {
             case EVENT:
                 return new Event(properties);
             case MARKET:
-                return new Market(properties);
+                Market market = new Market(properties);
+                marketIdToEventIdMap.putIfAbsent(market.getMarketId(), market.getEventId());
+                return market;
             case OUTCOME:
-                return new Outcome(properties);
-                default:
-                    throw new IllegalArgumentException(String.format("Failed to create instance of type=[%s]", type));
+                return new Outcome(properties, marketIdToEventIdMap.get(properties.get(4)));
+            default:
+                throw new IllegalArgumentException(String.format("Failed to create instance of type=[%s]", type));
         }
     }
 

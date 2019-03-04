@@ -18,8 +18,6 @@ import static org.springframework.messaging.support.MessageBuilder.createMessage
 @Component
 @Log4j2
 public class MessageProcessor {
-    private static final int CREATE_PARTITION = 1;
-    private static final String CREATE_OPERATION = "create";
     private final TcpListener tcpListener;
     private final Transformer transformer;
     private final KafkaTemplate<?, Domain> kafkaTemplate;
@@ -50,10 +48,7 @@ public class MessageProcessor {
      */
     private Message<?> createKafkaMessage(Domain domain) {
         Map<String, Object> headers = new HashMap<>();
-
-        if (CREATE_OPERATION.equalsIgnoreCase(domain.getOperation())) {
-            headers.put(KafkaHeaders.PARTITION_ID, CREATE_PARTITION);
-        }
+        headers.put(KafkaHeaders.MESSAGE_KEY, domain.getPartitionKey());
         headers.put(KafkaHeaders.TOPIC, topic);
         return createMessage(domain, new MessageHeaders(headers));
     }

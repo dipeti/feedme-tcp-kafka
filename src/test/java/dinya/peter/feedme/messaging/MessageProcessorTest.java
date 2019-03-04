@@ -78,20 +78,7 @@ class MessageProcessorTest {
         verify(mockKafkaTemplate).send(argumentCaptor.capture());
 
         Assertions.assertEquals(TOPIC, argumentCaptor.getValue().getHeaders().get(KafkaHeaders.TOPIC));
-        Assertions.assertEquals(1, argumentCaptor.getValue().getHeaders().get(KafkaHeaders.PARTITION_ID));
-    }
-
-    @Test
-    void shouldSetUpHeadersForNonCreateMessage() {
-        Domain event = DomainTestData.anOutcomeUpdateMessage();
-        when(mockTransformer.toDomain(anyString())).thenReturn(event);
-        when(mockTcpListener.takeMessage()).thenReturn("someString").thenReturn(null);
-
-        unit.startMessageProcessing();
-
-        verify(mockKafkaTemplate).send(argumentCaptor.capture());
-        Assertions.assertEquals(TOPIC, argumentCaptor.getValue().getHeaders().get(KafkaHeaders.TOPIC));
-        Assertions.assertNull(argumentCaptor.getValue().getHeaders().get(KafkaHeaders.PARTITION_ID));
+        Assertions.assertEquals(event.getPartitionKey(), argumentCaptor.getValue().getHeaders().get(KafkaHeaders.MESSAGE_KEY));
     }
 
 
